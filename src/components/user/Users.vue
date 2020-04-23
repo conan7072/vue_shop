@@ -40,8 +40,8 @@
                     <template slot-scope="slotProps">
                         <el-button type="primary" icon="el-icon-edit" size="mini" @click="editUser(slotProps.row)"></el-button>
                         <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteUser(slotProps.row.id)"></el-button>
-                        <el-tooltip class="item" effect="dark" content="分配角色" placement="top" :enterable="false">
-                            <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+                        <el-tooltip class="item" effect="dark" content="分配角色" placement="top" :enterable="false" >
+                            <el-button type="warning" icon="el-icon-setting" size="mini" @click="setRole(slotProps.row)"></el-button>
                         </el-tooltip>
                     </template>
                 </el-table-column>
@@ -100,6 +100,32 @@
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialogVisible = false">取 消</el-button>
                 <el-button type="primary" @click="editUserInfo">确 定</el-button>
+            </span>
+        </el-dialog>
+        <el-dialog
+            title="分配角色"
+            :visible.sync="setRoleDialogVisible"
+            width="50%"
+            @close='setRoleDialogClosed'
+            >
+            <div>
+                <p>当前的用户:{{roleList.username}}</p>
+                <p>当前的角色:{{roleList.role_name}}</p>
+                <p>分配新角色:
+                    <el-select v-model="selectedRoleId" placeholder="请选择">
+                        <el-option
+                        v-for="item in roleTable"
+                        :key="item.id"
+                        :label="item.roleName"
+                        :value="item.id">
+                        </el-option>
+                    </el-select>
+                </p>
+            </div>
+
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
             </span>
         </el-dialog>
         
@@ -181,8 +207,13 @@ export default {
                 ],
                 
             },
+            setRoleDialogVisible:false,
+            roleList:{},
+            roleTable:[],
+            selectedRoleId:''
             
         }
+
     },
     created:function(){
         this.getUsersList()
@@ -256,7 +287,7 @@ export default {
                 return
                 }
                 const { data: ret } = await that.$http.put('/users/'+that.editUsersForm.id, {email:that.editUsersForm.email,mobile:that.editUsersForm.mobile})
-                console.log(ret)
+                
                 if (ret.meta.status != 200) {
                 that.$message.error('修改用户信息失败')
                 return
@@ -287,6 +318,39 @@ export default {
             }
             
         },
+        async setRole(role){
+            
+            this.roleList.username=role.username
+            this.roleList.role_name=role.role_name
+            this.roleList.id=role.id
+
+            const {data:ret}=await this.$http.get('roles')
+            if(ret.meta.status!==200){
+                this.$message.error('获取角色列表失败')
+            }
+            this.roleTable=ret.data
+            this.setRoleDialogVisible=true
+        },
+        async saveRoleInfo(){
+            if(!this.selectedRoleId){
+                return this.$message.error('请选择要分配的角色!')
+            }
+            
+            const {data:ret}=await this.$http.put(`/users/${this.roleList.id}/role`,{rid:this.selectedRoleId})
+            
+            if (ret.meta.status != 200) {
+                    this.$message.error('分配角色失败')
+                    return
+                }
+                
+                this.$message.success('分配角色成功')
+                this.getUsersList()
+                this.setRoleDialogVisible=false
+        },
+        setRoleDialogClosed(){
+            this.selectedRoleId=''
+        }
+        
     }
 }
 </script>
