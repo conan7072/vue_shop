@@ -16,7 +16,12 @@
       >
         <!-- 用户名 -->
         <el-form-item label prop="username">
-          <el-input placeholder="用户名" prefix-icon="iconfont icon-user" v-model="loginForm.username"></el-input>
+          <el-input
+            placeholder="用户名"
+            prefix-icon="iconfont icon-user"
+            v-model="loginForm.username"
+          >
+          </el-input>
         </el-form-item>
         <!-- 密码 -->
         <el-form-item label prop="password">
@@ -25,7 +30,8 @@
             type="password"
             prefix-icon="iconfont icon-3702mima"
             v-model="loginForm.password"
-          ></el-input>
+          >
+          </el-input>
         </el-form-item>
         <!-- 按钮 -->
         <el-form-item label class="btns">
@@ -36,6 +42,7 @@
     </div>
   </div>
 </template>
+
 <script>
 export default {
   data() {
@@ -60,7 +67,6 @@ export default {
   methods: {
     loginFormReset: function() {
       this.$refs.loginFormRef.resetFields()
-      
     },
     loginValidation: function() {
       var that = this
@@ -76,7 +82,7 @@ export default {
         that.$message.success('登录成功')
 
         window.sessionStorage.setItem('token', ret.data.token)
-        
+
         that.$router.push('/home')
       })
     }
